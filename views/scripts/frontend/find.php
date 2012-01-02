@@ -20,21 +20,22 @@
         <select id="searchCat" name="cat">
             <option value=""><?php echo  $this->translate('search_all_categories')?></option>
             <?php foreach($this->availableCategories as $category){?>
-            <option <? if($this->category==$category){ ?>selected="selected"<?php } ?> value="<?php echo  $category ?>""><?php echo  $this->translate('search_category_'.$category)?></option>
+            <option <?php if($this->category==$category){ ?>selected="selected"<?php } ?> value="<?php echo  $category ?>"><?php echo  $this->translate('search_category_'.$category)?></option>
             <?php } ?>
         </select>
     <?php } ?>
     <span class="submit_wrapper"><input class="submit" type="submit" value="<?php echo  $this->translate('search_submit')?>"/></span>
 
          <script type="text/javascript">
-
-            $("#query").autocomplete('/plugin/SearchPhp/frontend/autocomplete/',{
-               minChars:3,
-               cacheLength: 0,
-               extraParams: {
-                   cat: function() { return $("#searchCat").val(); }
-               }
-            });
+					  if (jQuery().autocomplete) { // Only use autocompletion if the plugin is loaded
+              $("#query").autocomplete('/plugin/SearchPhp/frontend/autocomplete/',{
+                 minChars:3,
+                 cacheLength: 0,
+                 extraParams: {
+                     cat: function() { return $("#searchCat").val(); }
+                 }
+              });
+						}
 
         </script>
 
@@ -71,7 +72,7 @@
             <a href="?cat=<?php echo  $this->category ?>&query=<?php echo  $suggestion ?>"><?php echo  $suggestion ?></a>&nbsp;
             <?php } ?>
         </span>
-        <a style="cursor:pointer;" id="search_result_additional_suggestions_hint" onclick="$('search_result_additional_suggestions_hint').style.display='none';$('search_result_additional_suggestions').style.display=''"><?php echo  (count($this->suggestions)-5).' '.$this->translate('more_search_suggestions')?></a>
+        <a style="cursor:pointer;" id="search_result_additional_suggestions_hint" onclick="$('#search_result_additional_suggestions_hint').hide();$('#search_result_additional_suggestions').show()"><?php echo  (count($this->suggestions)-5).' '.$this->translate('more_search_suggestions')?></a>
     <?php } ?>
 <?php } ?>
 
