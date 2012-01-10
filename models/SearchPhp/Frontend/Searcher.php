@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pimcore
  *
@@ -12,17 +13,16 @@
  * @copyright  Copyright (c) 2009-2010 elements.at New Media Solutions GmbH (http://www.elements.at)
  * @license    http://www.pimcore.org/license     New BSD License
  */
-
-class SearchPhp_Frontend_Searcher {
-
+class SearchPhp_Frontend_Searcher
+{
     /**
      * @var Zend_Db_Adapter_Abstract
      */
     protected $db;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->db = Pimcore_Resource_Mysql::get();
-
     }
 
     /**
@@ -30,20 +30,20 @@ class SearchPhp_Frontend_Searcher {
      * @param  $queryStr
      * @return string
      */
-    public function getSumaryForUrl($url,$queryStr){
-
+    public function getSumaryForUrl($url, $queryStr)
+    {
         $query = "SELECT content from plugin_searchphp_contents where id = ? ";
         $params = array(md5($url));
-        $data = $this->db->fetchRow($query,$params);
+        $data = $this->db->fetchRow($query, $params);
         $sumary = null;
-        if($data){
-            $sumary =  $this->getHighlightedSumary($data['content'],array($queryStr));
-            if(empty($sumary)){
-                $tokens = explode(" ",$queryStr);
-                if(count($tokens)>1){
-                    foreach($tokens as $token){
-                        $sumary = $this->getHighlightedSumary($data['content'],$tokens);
-                        if(!empty($sumary)){
+        if ($data) {
+            $sumary = $this->getHighlightedSumary($data['content'], array($queryStr));
+            if (empty($sumary)) {
+                $tokens = explode(" ", $queryStr);
+                if (count($tokens) > 1) {
+                    foreach ($tokens as $token) {
+                        $sumary = $this->getHighlightedSumary($data['content'], $tokens);
+                        if (!empty($sumary)) {
                             break;
                         }
                     }
@@ -51,7 +51,6 @@ class SearchPhp_Frontend_Searcher {
             }
         }
         return $sumary;
-
     }
 
     /**
@@ -60,7 +59,8 @@ class SearchPhp_Frontend_Searcher {
      * @param  string $queryStr
      * @return int
      */
-    protected function findPosInSumary($text,$queryStr){
+    protected function findPosInSumary($text, $queryStr)
+    {
         $pos = stripos($text, " " . $queryStr . " ");
         if ($pos === FALSE) {
             $pos = stripos($text, '"' . $queryStr . '"');
@@ -91,18 +91,18 @@ class SearchPhp_Frontend_Searcher {
      * @param string $text
      * @param string[] $queryStr
      * @return string
-    */
-    protected function getHighlightedSumary($text,$queryTokens) {
-
+     */
+    protected function getHighlightedSumary($text, $queryTokens)
+    {
         //remove additional whitespaces
         $text = preg_replace("/[\s]+/", " ", $text);
 
         $pos = FALSE;
         $tokenInUse = $queryTokens[0];
-        foreach($queryTokens as $queryStr){
+        foreach ($queryTokens as $queryStr) {
             $tokenInUse = $queryStr;
-                $pos= $this->findPosInSumary($text,$queryStr);
-            if($pos !== FALSE){
+            $pos = $this->findPosInSumary($text, $queryStr);
+            if ($pos !== FALSE) {
                 break;
             }
         }
@@ -117,20 +117,21 @@ class SearchPhp_Frontend_Searcher {
             $sumary = trim($sumary);
 
 
-            $tokens = explode(" ",$sumary);
+            $tokens = explode(" ", $sumary);
             if (strtolower($tokens[0]) != strtolower($tokenInUse)) {
                 $tokens = array_slice($tokens, 1, - 1);
             } else {
-                $tokens = array_slice($tokens,0, - 1);
+                $tokens = array_slice($tokens, 0, - 1);
             }
             $trimmedSumary = implode(" ", $tokens);
-            foreach($queryTokens as $queryStr){
-                $trimmedSumary = preg_replace('@([ \'")(-:.,;])('.$queryStr.')([ \'")(-:.,;])@si', " <span class=\"highlight\">\\1\\2\\3</span>", $trimmedSumary);
-                $trimmedSumary = preg_replace('@^('.$queryStr.')([ \'")(-:.,;])@si', " <span class=\"highlight\">\\1\\2</span>", $trimmedSumary);
-                $trimmedSumary = preg_replace('@([ \'")(-:.,;])('.$queryStr.')$@si', " <span class=\"highlight\">\\1\\2</span>", $trimmedSumary);
+            foreach ($queryTokens as $queryStr) {
+                $trimmedSumary = preg_replace('@([ \'")(-:.,;])(' . $queryStr . ')([ \'")(-:.,;])@si', " <span class=\"highlight\">\\1\\2\\3</span>", $trimmedSumary);
+                $trimmedSumary = preg_replace('@^(' . $queryStr . ')([ \'")(-:.,;])@si', " <span class=\"highlight\">\\1\\2</span>", $trimmedSumary);
+                $trimmedSumary = preg_replace('@([ \'")(-:.,;])(' . $queryStr . ')$@si', " <span class=\"highlight\">\\1\\2</span>", $trimmedSumary);
             }
-            
+
             return $trimmedSumary;
         }
     }
+
 }

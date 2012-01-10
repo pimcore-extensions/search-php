@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 /**
  * Pimcore
  *
@@ -12,14 +13,10 @@
  * @copyright  Copyright (c) 2009-2010 elements.at New Media Solutions GmbH (http://www.elements.at)
  * @license    http://www.pimcore.org/license     New BSD License
  */
-
 class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_API_Plugin_Interface
 {
-
-
     public function __construct($jsPaths = null, $cssPaths = null, $alternateIndexDir = null)
     {
-
         parent::__construct($jsPaths, $cssPaths);
 
         if (!$this->isInstalled()) {
@@ -33,7 +30,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function getSearchConfigArray()
     {
-
         $config = new Zend_Config_Xml(PIMCORE_WEBSITE_PATH . "/var/search/search.xml");
         $config = $config->toArray();
         $config["search"]["frontend"]["categories"] = base64_decode($config["search"]["frontend"]["categories"]);
@@ -58,13 +54,10 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
             if ($locale instanceof Zend_Locale) {
                 $language = $locale->getLanguage();
             }
-
         } catch (Exception $e) {
         }
 
-
         $translate = new Zend_Translate('csv', PIMCORE_PLUGINS_PATH . self::getTranslationFile($language), $language, array('delimiter' => ','));
-
 
         if (self::isInstalled()) {
 
@@ -77,8 +70,8 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
                     $message .= $translate->_("searchphp_frontend_crawler_not_running") . " ";
                 }
 
-                $message .= $translate->_("SearchPhp_Frontend_Crawler_last_started") . " " . date('d.m.Y H:i', (double)$confArray['search']['frontend']['crawler']['started']) . " ";
-                $message .= $translate->_("SearchPhp_Frontend_Crawler_last_finished") . " " . date('d.m.Y H:i', (double)$confArray['search']['frontend']['crawler']['finished']) . " ";
+                $message .= $translate->_("SearchPhp_Frontend_Crawler_last_started") . " " . date('d.m.Y H:i', (double) $confArray['search']['frontend']['crawler']['started']) . " ";
+                $message .= $translate->_("SearchPhp_Frontend_Crawler_last_finished") . " " . date('d.m.Y H:i', (double) $confArray['search']['frontend']['crawler']['finished']) . " ";
                 if (!self::frontendConfigComplete()) {
                     $message .= " -------------------------------------------- ";
                     $message .= 'ERROR:' . $translate->_('searchphp_frontend_config_incomplete');
@@ -100,7 +93,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         }
     }
 
-
     /**
      *  indicates whether this plugins is currently installed
      * @return boolean $isInstalled
@@ -116,9 +108,7 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function readyForInstall()
     {
-
         $readyForInstall = true;
-
 
         if (!is_dir(PIMCORE_WEBSITE_PATH . "/var/tmp") or !is_writable(PIMCORE_WEBSITE_PATH . "/var/tmp")) {
             $readyForInstall = false;
@@ -153,14 +143,12 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function getTranslationFile($language)
     {
-
         if (is_file(PIMCORE_PLUGINS_PATH . "/SearchPhp/texts/" . $language . ".csv")) {
             return "/SearchPhp/texts/" . $language . ".csv";
         } else {
             return "/SearchPhp/texts/en.csv";
         }
     }
-
 
     /**
      * Reads the location for the frontend search index from search config file and returns path if exists
@@ -169,8 +157,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function getFrontendSearchIndex()
     {
-
-
         if (file_exists(PIMCORE_WEBSITE_PATH . "/var/search/search.xml")) {
 
             $searchConf = new Zend_Config_Xml(PIMCORE_WEBSITE_PATH . "/var/search/search.xml");
@@ -179,13 +165,12 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
                     return $searchConf->search->frontend->index;
                 } else if (is_dir(PIMCORE_DOCUMENT_ROOT . "/" . $searchConf->search->frontend->index)) {
                     return PIMCORE_DOCUMENT_ROOT . "/" . $searchConf->search->frontend->index;
-                } else return null;
+                } else
+                    return null;
             }
-
         } else {
             logger::err("Search_Plugin: Could not read search config.");
         }
-
     }
 
     /**
@@ -194,7 +179,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function install()
     {
-
         $translate = new Zend_Translate('csv', PIMCORE_PLUGINS_PATH . self::getTranslationFile('en'), 'en', array('delimiter' => ','));
         $message = "";
 
@@ -213,7 +197,9 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
                   <urls></urls>
                   <validLinkRegexes></validLinkRegexes>
                   <invalidLinkRegexesEditable></invalidLinkRegexesEditable>
-                  <invalidLinkRegexes>@.*\.(js|JS|gif|GIF|jpg|JPG|png|PNG|ico|ICO|eps|jpeg|JPEG|bmp|BMP|css|CSS|sit|wmf|zip|ppt|mpg|xls|gz|rpm|tgz|mov|MOV|exe|mp3|MP3|kmz|gpx|kml|swf|SWF)$@</invalidLinkRegexes>
+                  <invalidLinkRegexes>
+                    @.*\.(js|gif|jpg|png|ico|eps|jpeg|bmp|css|sit|wmf|zip|ppt|mpg|xls|gz|rpm|tgz|mov|exe|mp3|kmz|gpx|kml|swf)$@i
+                  </invalidLinkRegexes>
                   <categories></categories>
                   <crawler>
                     <maxThreads>20</maxThreads>
@@ -250,22 +236,24 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
                 } else {
                     $message .= $translate->_("could_not_create_frontend_index_dir");
                 }
-
             } else {
                 $message .= $translate->_("frontend_index_dir_not_configured");
             }
-
         } else {
             $message .= $translate->_("failed_to_setup_search_config");
         }
 
         //add redirect for sitemap.xml
         $redirect = new Redirect();
-        $redirect->setValues(array("source" => "/\/sitemap.xml/", "target" => "/plugin/SearchPhp/frontend/sitemap", "statusCode" => 301, "priority" => 10));
+        $redirect->setValues(array(
+            "source" => "/\/sitemap.xml/",
+            "target" => "/plugin/SearchPhp/frontend/sitemap",
+            "statusCode" => 301,
+            "priority" => 10
+        ));
         $redirect->save();
 
         return $message;
-
     }
 
     /**
@@ -274,20 +262,17 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function uninstall()
     {
-
         $language = "en";
         try {
             $locale = Zend_Registry::get("Zend_Locale");
             if ($locale instanceof Zend_Locale) {
                 $language = $locale->getLanguage();
             }
-
         } catch (Exception $e) {
+
         }
 
-
         $translate = new Zend_Translate('csv', PIMCORE_PLUGINS_PATH . self::getTranslationFile($language), $language, array('delimiter' => ','));
-
 
         $index = self::getFrontendSearchIndex();
         $success = false;
@@ -300,7 +285,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         } else {
             return $translate->_("uninstall_failed");
         }
-
     }
 
     /**
@@ -310,16 +294,19 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     private static function deleteDirectory($dir)
     {
-        if (!file_exists($dir)) return true;
-        if (!is_dir($dir)) return unlink($dir);
+        if (!file_exists($dir))
+            return true;
+        if (!is_dir($dir))
+            return unlink($dir);
         foreach (scandir($dir) as $item) {
-            if ($item == '.' || $item == '..') continue;
-            if (!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) return false;
+            if ($item == '.' || $item == '..')
+                continue;
+            if (!self::deleteDirectory($dir . DIRECTORY_SEPARATOR . $item))
+                return false;
         }
         logger::info("removing " . $dir);
         return rmdir($dir);
     }
-
 
     /**
      * @return bool
@@ -327,8 +314,10 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
     public static function frontendCrawlerRunning()
     {
         $configArray = self::getSearchConfigArray();
-        if ($configArray['search']['frontend']['crawler']['running']) return true;
-        else return false;
+        if ($configArray['search']['frontend']['crawler']['running'])
+            return true;
+        else
+            return false;
     }
 
     /**
@@ -338,8 +327,10 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
     public static function frontendCrawlerStopLocked()
     {
         $configArray = self::getSearchConfigArray();
-        if ($configArray['search']['frontend']['crawler']['forceStop']) return true;
-        else return false;
+        if ($configArray['search']['frontend']['crawler']['forceStop'])
+            return true;
+        else
+            return false;
     }
 
     /**
@@ -348,8 +339,10 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
     public static function frontendCrawlerScheduledForStart()
     {
         $configArray = self::getSearchConfigArray();
-        if ($configArray['search']['frontend']['crawler']['forceStart']) return true;
-        else return false;
+        if ($configArray['search']['frontend']['crawler']['forceStart'])
+            return true;
+        else
+            return false;
     }
 
     /**
@@ -373,7 +366,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function stopFrontendCrawler($playNice = true, $isFrontendCall = false)
     {
-
         logger::debug("SearchPhp_Plugin: forcing frontend crawler stop, play nice: [ $playNice ]");
         self::setStopLock("frontend", true);
 
@@ -410,8 +402,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         }
 
         if (!$playNice) {
-
-
             if (is_file(PIMCORE_SYSTEM_TEMP_DIRECTORY . "/maintainance_SearchPhp_Plugin.pid" and $isFrontendCall)) {
                 $pidFiles[] = "maintainance_SearchPhp_Plugin.pid";
             }
@@ -434,7 +424,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
             return true;
         }
         return false;
-
     }
 
     /**
@@ -443,7 +432,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public function frontendCrawl($configArray = null)
     {
-
         if (!is_array($configArray)) {
             $configArray = self::getSearchConfigArray();
         }
@@ -520,12 +508,11 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         $configArray['search'][$crawler]['crawler']['forceStart'] = 1;
         $config = new Zend_Config($configArray, true);
         $writer = new Zend_Config_Writer_Xml(array(
-                                                  "config" => $config,
-                                                  "filename" => PIMCORE_WEBSITE_PATH . "/var/search/search.xml"
-                                             ));
+            "config" => $config,
+            "filename" => PIMCORE_WEBSITE_PATH . "/var/search/search.xml"
+        ));
         $writer->write();
     }
-
 
     /**
      * @param  string $crawler frontend | backend
@@ -535,11 +522,11 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     protected static function setCrawlerState($crawler, $action, $running, $setTime = true)
     {
-
         $config = new Zend_Config_Xml(PIMCORE_WEBSITE_PATH . "/var/search/search.xml");
         $configArray = $config->toArray();
         $run = 0;
-        if ($running) $run = 1;
+        if ($running)
+            $run = 1;
         $configArray['search'][$crawler]['crawler']['forceStart'] = 0;
         $configArray['search'][$crawler]['crawler']['running'] = $run;
         if ($setTime) {
@@ -547,12 +534,11 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         }
         $config = new Zend_Config($configArray, true);
         $writer = new Zend_Config_Writer_Xml(array(
-                                                  "config" => $config,
-                                                  "filename" => PIMCORE_WEBSITE_PATH . "/var/search/search.xml"
-                                             ));
+            "config" => $config,
+            "filename" => PIMCORE_WEBSITE_PATH . "/var/search/search.xml"
+        ));
         $writer->write();
     }
-
 
     protected static function setStopLock($crawler, $flag = true)
     {
@@ -569,9 +555,9 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         }
         $config = new Zend_Config($configArray, true);
         $writer = new Zend_Config_Writer_Xml(array(
-                                                  "config" => $config,
-                                                  "filename" => PIMCORE_WEBSITE_PATH . "/var/search/search.xml"
-                                             ));
+                "config" => $config,
+                "filename" => PIMCORE_WEBSITE_PATH . "/var/search/search.xml"
+            ));
         $writer->write();
     }
 
@@ -580,7 +566,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public function maintenance()
     {
-
         if (self::isInstalled()) {
             $currentHour = date("H", time());
             $configArray = self::getSearchConfigArray();
@@ -608,7 +593,6 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         }
     }
 
-
     /**
      *
      * @param string $queryStr
@@ -617,9 +601,7 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function wildcardFindTerms($queryStr, $index)
     {
-
         if ($index != null) {
-
             $pattern = new Zend_Search_Lucene_Index_Term($queryStr . '*');
             $userQuery = new Zend_Search_Lucene_Search_Query_Wildcard($pattern);
             Zend_Search_Lucene_Search_Query_Wildcard::setMinPrefixLength(2);
@@ -628,8 +610,8 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
 
             return $terms;
         }
+        return array();
     }
-
 
     /**
      *  finds similar terms
@@ -641,9 +623,7 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
      */
     public static function fuzzyFindTerms($queryStr, $index, $prefixLengh = 0, $similarity = 0.5)
     {
-
         if ($index != null) {
-
             Zend_Search_Lucene_Search_Query_Fuzzy::setDefaultPrefixLength($prefixLengh);
             $term = new Zend_Search_Lucene_Index_Term($queryStr);
             $fuzzyQuery = new Zend_Search_Lucene_Search_Query_Fuzzy($term, $similarity);
@@ -654,7 +634,7 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
 
             return $terms;
         }
+        return array();
     }
 
 }
-

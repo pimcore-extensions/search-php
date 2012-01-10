@@ -2,7 +2,6 @@
 
 class SearchPhp_FrontendController extends Website_Controller_Action
 {
-
     protected $frontendIndex;
     protected $searchLanguage;
     protected $ownHostOnly = false;
@@ -10,7 +9,6 @@ class SearchPhp_FrontendController extends Website_Controller_Action
 
     public function init()
     {
-
         parent::init();
 
         if (file_exists(PIMCORE_WEBSITE_PATH . "/var/search/search.xml")) {
@@ -32,7 +30,8 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                             }
 
                         }
-                    } else  $this->searchLanguage = null;
+                    } else
+                        $this->searchLanguage = null;
 
                     $this->fuzzySearch = false;
                     if ($searchConf->search->frontend->fuzzySearch == '1') {
@@ -43,8 +42,8 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                         $this->ownHostOnly = true;
                     }
                 } catch (Exception $e) {
-                    //p_r($e);
-                    throw new Exception("could not open index");
+                    logger::emerg($e->getMessage());
+                    logger::emerg("could not open search index - search disabled");
                 }
             } else {
                 throw new Exception("search frontend is not installed and enabled.");
@@ -54,7 +53,6 @@ class SearchPhp_FrontendController extends Website_Controller_Action
 
     public function sitemapAction()
     {
-
         $this->removeViewRenderer();
 
         $sitemapFile = $this->_getParam("sitemap");
@@ -75,20 +73,17 @@ class SearchPhp_FrontendController extends Website_Controller_Action
         } else if (is_file($indexSitemap)) {
             $content = file_get_contents($indexSitemap);
             //TODO: strlen($content) takes a few seconds!
-            //header("Content-Length: ".strlen($content));           
+            //header("Content-Length: ".strlen($content));
             echo $content;
             exit;
         } else {
             logger::debug(get_class($this) . ": sitemap request - but no sitemap available to deliver");
             exit;
         }
-
-
     }
 
     public function autocompleteAction()
     {
-
         $queryFromRequest = $this->cleanRequestString($this->_getParam("q"));
         $categoryFromRequest = $this->cleanRequestString($this->_getParam("cat"));
 
@@ -98,10 +93,8 @@ class SearchPhp_FrontendController extends Website_Controller_Action
             $terms = SearchPhp_Plugin::fuzzyFindTerms(strtolower($queryFromRequest), $this->frontendIndex);
         }
 
-        $data = array();
         $suggestions = array();
         $counter = 1;
-
 
         if ($this->searchLanguage != null) {
             if (is_object($this->searchLanguage)) {
@@ -110,7 +103,6 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                 $language = $this->searchLanguage;
             }
             $language = str_replace(array("_", "-"), "", $language);
-
         }
 
         foreach ($terms as $term) {
@@ -156,23 +148,20 @@ class SearchPhp_FrontendController extends Website_Controller_Action
             if (count($validHits) > 0 and !in_array($t, $suggestions)) {
 
                 $suggestions[] = $t;
-                if ($counter >= 10) break;
+                if ($counter >= 10)
+                    break;
                 $counter++;
             }
         }
-
 
         $this->removeViewRenderer();
         foreach ($suggestions as $suggestion) {
             echo $suggestion . "\r\n";
         }
-
     }
 
     public function findAction()
     {
-
-
         $queryFromRequest = $this->cleanRequestString($_REQUEST["query"]);
         $categoryFromRequest = $this->cleanRequestString($_REQUEST["cat"]);
 
@@ -197,11 +186,11 @@ class SearchPhp_FrontendController extends Website_Controller_Action
         $this->view->category = $categoryFromRequest;
         if (!empty($this->view->category)) {
             $category = $this->view->category;
-        } else $category = null;
+        } else
+            $category = null;
         $pluginConf = SearchPhp_Plugin::getSearchConfigArray();
         if (!empty($pluginConf["search"]["frontend"]["categories"])) {
             $this->view->availableCategories = explode(",", $pluginConf["search"]["frontend"]["categories"]);
-
         }
 
         $doFuzzy = $this->_getParam("fuzzy");
@@ -224,7 +213,6 @@ class SearchPhp_FrontendController extends Website_Controller_Action
 
                 $userQuery = Zend_Search_Lucene_Search_QueryParser::parse($queryStr, 'utf-8');
                 $query->addSubquery($userQuery, true);
-
 
                 if (!empty($this->searchLanguage)) {
                     if (is_object($this->searchLanguage)) {
@@ -267,7 +255,6 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                     $validHits = $hits;
                 }
 
-
                 $start = $perPage * ($page - 1);
                 $end = $start + ($perPage - 1);
                 if ($end > count($validHits) - 1) {
@@ -292,6 +279,7 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                             $searchResult['h1'] = $hit->getDocument()->getField("h1")->value;
                         }
                     } catch (Zend_Search_Lucene_Exception $e) {
+
                     }
 
 
@@ -299,17 +287,14 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                         try {
                             $searchResult['categories'][] = $hit->getDocument()->getField("cat")->value;
                         } catch (Zend_Search_Lucene_Exception $e) {
+
                         }
                     }
 
                     $searchResults[] = $searchResult;
                     unset($searchResult);
-
                 }
-
-
             }
-
 
             if (count($validHits) < 1) {
                 $this->view->pages = 0;
@@ -322,7 +307,6 @@ class SearchPhp_FrontendController extends Website_Controller_Action
             $this->view->query = $queryStr;
 
             $this->view->searchResults = $searchResults;
-
 
             if ($this->fuzzySearch) {
                 //look for similar search terms
@@ -387,18 +371,16 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                                 $validHits = $hits;
                             }
 
-                            if (count($validHits) > 0 and!in_array($t, $suggestions)) {
+                            if (count($validHits) > 0 and !in_array($t, $suggestions)) {
 
                                 $suggestions[] = $t;
-                                if ($counter >= 20) break;
+                                if ($counter >= 20)
+                                    break;
                                 $counter++;
                             }
-
                         }
                     }
                     $this->view->suggestions = $suggestions;
-
-
                 }
             }
         } catch (Exception $e) {
@@ -410,10 +392,7 @@ class SearchPhp_FrontendController extends Website_Controller_Action
         if ($this->_getParam("viewscript")) {
             $this->renderScript($this->_getParam("viewscript"));
         }
-
-
     }
-
 
     /**
      * remove evil stuff from request string
@@ -422,11 +401,9 @@ class SearchPhp_FrontendController extends Website_Controller_Action
      */
     private function cleanRequestString($requestString)
     {
-
         $queryFromRequest = strip_tags(urldecode($requestString));
         $queryFromRequest = str_replace(array('<', '>', '"', "'", '&'), "", $queryFromRequest);
         return $queryFromRequest;
-
     }
 
 }
