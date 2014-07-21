@@ -384,8 +384,8 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         $maxThreads = $configArray['search']['frontend']['crawler']['maxThreads'];
 
         $db = Pimcore_Resource_Mysql::get();
-        $db->exec("DROP TABLE IF EXISTS `plugin_SearchPhp_Frontend_Crawler_todo`;");
-        $db->exec("DROP TABLE IF EXISTS `plugin_searchphp_indexer_todo`;");
+        $db->query("DROP TABLE IF EXISTS `plugin_searchphp_frontend_crawler_todo`;");
+        $db->query("DROP TABLE IF EXISTS `plugin_searchphp_indexer_todo`;");
 
         logger::debug("SearchPhp_Plugin: forcing frontend crawler stop - dropped tables");
 
@@ -488,8 +488,8 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
                     logger::debug("SearchPhp_Plugin: replacing old index ...");
 
                     $db = Pimcore_Resource_Mysql::get();
-                    $db->exec("DROP TABLE IF EXISTS `plugin_searchphp_contents`;");
-                    $db->exec("RENAME TABLE `plugin_searchphp_contents_temp` TO `plugin_searchphp_contents`;");
+                    $db->query("DROP TABLE IF EXISTS `plugin_searchphp_contents`;");
+                    $db->query("RENAME TABLE `plugin_searchphp_contents_temp` TO `plugin_searchphp_contents`;");
 
                     //TODO nix specific
                     exec("rm -Rf " . $indexDir);

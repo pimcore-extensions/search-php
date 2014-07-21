@@ -25,7 +25,12 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                     if ($searchConf->search->frontend->ignoreLanguage != '1') {
                         $this->searchLanguage = $this->_getParam("language");
                         if (empty($this->searchLanguage)) {
-                            $this->searchLanguage = Zend_Registry::get("Zend_Locale");
+                            try {
+                                $this->searchLanguage = Zend_Registry::get("Zend_Locale");
+                            } catch (Exception $e) {
+                                $this->searchLanguage = "en";
+                            }
+
                         }
                     } else  $this->searchLanguage = null;
 
@@ -245,6 +250,13 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                 if ($this->ownHostOnly and $hits != null) {
                     //get rid of hits from other hosts
                     $currenthost = $_SERVER['HTTP_HOST'];
+                    if (count($hits) == 1) {
+                        $url = $hits[0]->getDocument()->getField("url");
+                        if (strpos($url->value, "http://" . $currenthost) !== FALSE || strpos($url->value, "https://" . $currenthost) !== FALSE) {
+                            $validHits[] = $hits[0];
+                        }
+                    }
+
                     for ($i = 0; $i < (count($hits)); $i++) {
                         $url = $hits[$i]->getDocument()->getField("url");
                         if (strpos($url->value, "http://" . $currenthost) !== FALSE || strpos($url->value, "https://" . $currenthost) !== FALSE) {
@@ -359,6 +371,12 @@ class SearchPhp_FrontendController extends Website_Controller_Action
                             if ($this->ownHostOnly and $hits != null) {
                                 //get rid of hits from other hosts
                                 $currenthost = $_SERVER['HTTP_HOST'];
+                                if (count($hits) == 1) {
+                                    $url = $hits[0]->getDocument()->getField("url");
+                                    if (strpos($url->value, "http://" . $currenthost) !== FALSE || strpos($url->value, "https://" . $currenthost) !== FALSE) {
+                                        $validHits[] = $hits[0];
+                                    }
+                                }
                                 for ($i = 0; $i < (count($hits)); $i++) {
                                     $url = $hits[$i]->getDocument()->getField("url");
                                     if (strpos($url->value, "http://" . $currenthost) !== FALSE) {
@@ -395,8 +413,6 @@ class SearchPhp_FrontendController extends Website_Controller_Action
 
 
     }
-
-
 
 
     /**

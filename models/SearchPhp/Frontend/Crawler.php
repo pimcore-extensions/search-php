@@ -13,7 +13,8 @@
  * @license    http://www.pimcore.org/license     New BSD License
  */
 
-class SearchPhp_Frontend_Crawler {
+class SearchPhp_Frontend_Crawler
+{
 
     /**
      * @var integer
@@ -76,7 +77,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  string[] $invalidLinkRegexes
      * @return void
      */
-    public function __construct($validLinkRegexes, $invalidLinkRegexes, $maxRedirects = 10, $timeout = 30, $searchStartIndicator = null, $searchEndIndicator = null, $maxThreads = 20, $maxLinkDepth = 15) {
+    public function __construct($validLinkRegexes, $invalidLinkRegexes, $maxRedirects = 10, $timeout = 30, $searchStartIndicator = null, $searchEndIndicator = null, $maxThreads = 20, $maxLinkDepth = 15)
+    {
         $this->validLinkRegexes = $validLinkRegexes;
         $this->invalidLinkRegexes = $invalidLinkRegexes;
         $this->maxRedirects = $maxRedirects;
@@ -88,9 +90,9 @@ class SearchPhp_Frontend_Crawler {
         $db = Pimcore_Resource_Mysql::get();
 
         $this->db = $db;
-        $db->exec("DROP TABLE IF EXISTS `plugin_searchphp_contents_temp`;");
+        $db->query("DROP TABLE IF EXISTS `plugin_searchphp_contents_temp`;");
 
-        $db->exec("CREATE TABLE `plugin_searchphp_contents_temp` (
+        $db->query("CREATE TABLE `plugin_searchphp_contents_temp` (
                 `id` VARCHAR(255) NOT NULL,
                 `uri` TEXT NOT NULL,
                 `host` VARCHAR(255) NOT NULL,
@@ -99,9 +101,9 @@ class SearchPhp_Frontend_Crawler {
                       PRIMARY KEY  (`id`)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
-        $db->exec("DROP TABLE IF EXISTS `plugin_searchphp_frontend_crawler_todo`;");
+        $db->query("DROP TABLE IF EXISTS `plugin_searchphp_frontend_crawler_todo`;");
 
-        $db->exec("CREATE TABLE `plugin_searchphp_frontend_crawler_todo` (
+        $db->query("CREATE TABLE `plugin_searchphp_frontend_crawler_todo` (
                         `id` VARCHAR(255) NOT NULL,
                         `uri` TEXT NOT NULL,
                         `depth` int(11) unsigned,
@@ -109,9 +111,18 @@ class SearchPhp_Frontend_Crawler {
                               PRIMARY KEY  (`id`)
                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 
-        $db->exec("DROP TABLE IF EXISTS `plugin_searchphp_indexer_todo`;");
+        $db->query("DROP TABLE IF EXISTS `plugin_searchphp_frontend_crawler_noindex`;");
 
-        $db->exec("CREATE TABLE `plugin_searchphp_indexer_todo` (
+        $db->query("CREATE TABLE `plugin_searchphp_frontend_crawler_noindex` (
+                                `id` VARCHAR(255) NOT NULL,
+                                `uri` TEXT NOT NULL,
+                                      PRIMARY KEY  (`id`)
+                                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+
+
+        $db->query("DROP TABLE IF EXISTS `plugin_searchphp_indexer_todo`;");
+
+        $db->query("CREATE TABLE `plugin_searchphp_indexer_todo` (
                         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                         `content` LONGTEXT NOT NULL,
                               PRIMARY KEY  (`id`)
@@ -132,7 +143,8 @@ class SearchPhp_Frontend_Crawler {
     /**
      * @return string[]
      */
-    public function getLinks() {
+    public function getLinks()
+    {
         return $this->links;
     }
 
@@ -140,7 +152,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  string[] $urls
      * @return void
      */
-    public function findLinks($urls) {
+    public function findLinks($urls)
+    {
 
 
         //inital for all urls
@@ -211,7 +224,8 @@ class SearchPhp_Frontend_Crawler {
      * @param int $delay
      * @return array|FALSE
      */
-    protected function getIndexerRows($delay = 0) {
+    protected function getIndexerRows($delay = 0)
+    {
 
         $rows = array();
         if ($delay > 0) {
@@ -235,7 +249,8 @@ class SearchPhp_Frontend_Crawler {
      *
      * @return void writes lucene documents from db to lucene index
      */
-    public function doIndex($final = false) {
+    public function doIndex($final = false)
+    {
         $this->db = Pimcore_Resource_Mysql::reset();
         $this->checkAndPrepareIndex();
 
@@ -258,7 +273,7 @@ class SearchPhp_Frontend_Crawler {
                 }
             }
 
-            if ($rows!==FALSE and count($rows) > 0) {
+            if ($rows !== FALSE and count($rows) > 0) {
                 foreach ($rows as $row) {
                     $id = $row['id'];
                     $doc = unserialize($row['content']);
@@ -267,7 +282,7 @@ class SearchPhp_Frontend_Crawler {
                         logger::debug(get_class($this) . ": Added to lucene index db entry id [ $id ] ", Zend_Log::DEBUG);
                     } else {
                         logger::error(get_class($this) . ": could not unserialize lucene document from db row [ $id ] ", Zend_Log::DEBUG);
-                        logger::error(get_class($this). ": string length: ". strlen($row['content']));
+                        logger::error(get_class($this) . ": string length: " . strlen($row['content']));
                     }
 
                     $idsDone[] = $id;
@@ -280,7 +295,7 @@ class SearchPhp_Frontend_Crawler {
 
             }
 
-        } while ($rows!==FALSE and count($rows) > 0);
+        } while ($rows !== FALSE and count($rows) > 0);
 
 
         //clean up
@@ -296,7 +311,8 @@ class SearchPhp_Frontend_Crawler {
     /**
      * @return void
      */
-    public function continueWithFoundLinks() {
+    public function continueWithFoundLinks()
+    {
 
         //reset DB in case this is executed in a forked child process
         $this->db = Pimcore_Resource_Mysql::reset();
@@ -312,13 +328,13 @@ class SearchPhp_Frontend_Crawler {
             return;
         }
 
-        if(empty($nextLink)){
+        if (empty($nextLink)) {
             return;
         }
 
-         $client = Pimcore_Tool::getHttpClient();
-         $client->setUri($nextLink);
-            $client->setConfig(array(
+        $client = Pimcore_Tool::getHttpClient();
+        $client->setUri($nextLink);
+        $client->setConfig(array(
             'maxredirects' => $this->maxRedirects,
             'keepalive' => true,
             'timeout' => $this->timeout));
@@ -372,8 +388,14 @@ class SearchPhp_Frontend_Crawler {
                             } catch (Exception $e) {
                                 logger::log(get_class($this) . ": could not fetch from plugin_searchphp_contents_temp", Zend_Log::DEBUG);
                             }
-                            if ($rowTodo['count'] > 0 or $rowDone['count'] > 0) {
-                                //logger::log(get_class($this) . " Redirected to uri [ $nextLink ] - which is done already or in fetch list ",Zend_Log::DEBUG);
+                            try {
+                                $rowNoIndex = $this->db->fetchRow("SELECT count(*) as count from plugin_searchphp_frontend_crawler_noindex WHERE id ='" . md5($nextLink) . "'");
+                            } catch (Exception $e) {
+                                logger::log(get_class($this) . ": could not fetch from plugin_searchphp_frontend_crawler_noindex", Zend_Log::DEBUG);
+                            }
+
+                            if ($rowTodo['count'] > 0 or $rowDone['count'] > 0 or $rowNoIndex['count'] > 0) {
+                                logger::log(get_class($this) . " Redirected to uri [ $nextLink ] - which has already been processed", Zend_Log::DEBUG);
                             } else {
                                 try {
                                     $success = $this->parse($nextLink, $response, $client->getUri()->getHost(), $client->getCookieJar(), $depth);
@@ -411,12 +433,12 @@ class SearchPhp_Frontend_Crawler {
             } catch (Exception $e) {
                 //wait 2 seconds then try again
                 sleep(2);
-                try{
+                try {
                     $row = $this->db->fetchRow("SELECT * FROM plugin_searchphp_frontend_crawler_todo ORDER BY id", array());
                     $nextLink = $row['uri'];
                     $depth = $row['depth'];
                     $cookieJar = unserialize($row['cookiejar']);
-                } catch(Exception $e){
+                } catch (Exception $e) {
                     // probably table was already removed because crawler is finished
                     logger::log(get_class($this) . ": Could not extract next link from table plugin_searchphp_frontend_crawler_todo ", Zend_Log::DEBUG);
                     $nextLink = false;
@@ -437,22 +459,23 @@ class SearchPhp_Frontend_Crawler {
      * @param string $link previous link on which the current link was found
      * @return string
      */
-    protected function cleanAndFormatLink($foundLink, $protocol, $host, $link) {
+    protected function cleanAndFormatLink($foundLink, $protocol, $host, $link)
+    {
 
         //make the entire link lower case
-        $foundLink=strtolower($foundLink);
+        $foundLink = strtolower($foundLink);
 
         //make sure this is not an endless loop
-        $testString = $foundLink.$foundLink.$foundLink;
-        if(strpos(strtolower($link),$testString)!==FALSE){
-            Logger::debug(get_class($this).": Detected insane link [ $link ], stopping here.");
+        $testString = $foundLink . $foundLink . $foundLink;
+        if (strpos(strtolower($link), $testString) !== FALSE) {
+            Logger::debug(get_class($this) . ": Detected insane link [ $link ], stopping here.");
             return null;
         }
 
         //remove all %20 from the beginning of the link - some crazy users manage to produce these weird links with wysiwyg editor
-        if(strpos($foundLink,"%20")===0){
+        if (strpos($foundLink, "%20") === 0) {
             $pattern = "@^([%20]*)(http.*)@";
-            $foundLink=preg_replace($pattern,'$2',$foundLink);
+            $foundLink = preg_replace($pattern, '$2', $foundLink);
         }
 
         //remove #,?and & from the end of the link if they are not followed by any parameters
@@ -467,7 +490,7 @@ class SearchPhp_Frontend_Crawler {
             $foundLink = $protocol . "://" . strtolower($host) . $foundLink;
         } else if ($foundLink[0] == '?') {
             $paramsStart = stripos($link, "?");
-            if ($paramsStart!==FALSE) {
+            if ($paramsStart !== FALSE) {
                 $linkWithoutParameters = substr($link, 0, stripos($link, "?"));
                 $foundLink = $linkWithoutParameters . $foundLink;
             } else {
@@ -478,21 +501,21 @@ class SearchPhp_Frontend_Crawler {
             $foundLink = $link . $foundLink;
         } else if ($foundLink[0] == '#') {
             $foundLink = $link . $foundLink;
-        } else if (strpos($foundLink, "http://")!==0
-                and strpos($foundLink, "https://")!==0
-                and strpos($foundLink, "www.")!==0
-                and strpos($foundLink, "mailto:")!==0
-                and strpos($foundLink, "javascript:")!==0
-                and strpos($foundLink, "file://")!==0
-                and strpos($foundLink, "ftp://")!==0
-                and strpos($foundLink, "gopher://")!==0
-                and strpos($foundLink, "telnet://")!==0
-                and strpos($foundLink, "news:")!==0
+        } else if (strpos($foundLink, "http://") !== 0
+            and strpos($foundLink, "https://") !== 0
+                and strpos($foundLink, "www.") !== 0
+                    and strpos($foundLink, "mailto:") !== 0
+                        and strpos($foundLink, "javascript:") !== 0
+                            and strpos($foundLink, "file://") !== 0
+                                and strpos($foundLink, "ftp://") !== 0
+                                    and strpos($foundLink, "gopher://") !== 0
+                                        and strpos($foundLink, "telnet://") !== 0
+                                            and strpos($foundLink, "news:") !== 0
         ) {
 
             logger::debug("relative link:" . $foundLink);
             $foundLink = $link . $foundLink;
-        } else if (strpos($foundLink, "https://")===0 or strpos($foundLink, "http://")===0) {
+        } else if (strpos($foundLink, "https://") === 0 or strpos($foundLink, "http://") === 0) {
             //absolute link -> strtolower host
             try {
                 $uri = Zend_Uri_Http::fromString($foundLink);
@@ -511,12 +534,13 @@ class SearchPhp_Frontend_Crawler {
      * @param integer $depth
      * @return boolean
      */
-    protected function parse($link, $response, $host, $cookieJar, $depth) {
+    protected function parse($link, $response, $host, $cookieJar, $depth)
+    {
 
         $success = false;
-        if (strpos($link, "https://")!==FALSE) {
+        if (strpos($link, "https://") !== FALSE) {
             $protocol = "https";
-        } else if (strpos($link, "http://")!==FALSE) {
+        } else if (strpos($link, "http://") !== FALSE) {
             $protocol = "http";
         } else {
             logger::log(get_class($this) . " parsing [$link] not possible. Only parsing http and https ", Zend_Log::DEBUG);
@@ -555,10 +579,11 @@ class SearchPhp_Frontend_Crawler {
      * @param  string $html
      * @return string
      */
-    protected function checkForCanonical($html) {
+    protected function checkForCanonical($html)
+    {
 
         include_once 'simple_html_dom.php';
-        if($source = str_get_html($html)) {
+        if ($source = str_get_html($html)) {
             $headElements = $source->find("head link");
 
             foreach ($headElements as $element) {
@@ -579,15 +604,16 @@ class SearchPhp_Frontend_Crawler {
      * @param integer $depth
      * @return boolean
      */
-    protected function parseHtml($link, $response, $host, $protocol, $cookieJar, $depth) {
+    protected function parseHtml($link, $response, $host, $protocol, $cookieJar, $depth)
+    {
 
 
         $html = $response->getBody();
 
         $canonicalLink = $this->checkForCanonical($html);
-        if ($canonicalLink) {
-            $this->processFoundLink($canonicalLink,$protocol,$host,$link,$depth,$cookieJar);
-            logger::debug(get_class($this).": Stopping to parse html at [ $link ], processing canonical link [ $canonicalLink ] instead");
+        if ($canonicalLink and $canonicalLink!=$link) {
+            $this->processFoundLink($canonicalLink, $protocol, $host, $link, $depth, $cookieJar);
+            logger::debug(get_class($this) . ": Stopping to parse html at [ $link ], processing canonical link [ $canonicalLink ] instead");
             return true;
         }
 
@@ -613,7 +639,7 @@ class SearchPhp_Frontend_Crawler {
         if (!in_array("noindex", $robotsMeta)) {
             //now limit to search content area if indicators are set and found in this document
             if (!empty($this->searchStartIndicator)) {
-                $documentHasDelimiter = strpos($html, $this->searchStartIndicator)!==FALSE;
+                $documentHasDelimiter = strpos($html, $this->searchStartIndicator) !== FALSE;
             }
             if ($documentHasDelimiter and !empty($this->searchStartIndicator) and !empty($this->searchEndIndicator)) {
 
@@ -631,7 +657,7 @@ class SearchPhp_Frontend_Crawler {
                 //get snippets within allowed content areas
                 $htmlSnippets = array();
                 $minified = str_replace(array("\r\n", "\r", "\n"), "", $html);
-                $minified = preg_replace('@[\s]+@', " ", $minified);
+                $minified = preg_replace('@[ \t\n\r\f]+@', " ", $minified);
 
                 preg_match_all('%' . $this->searchStartIndicator . '(.*?)' . $this->searchEndIndicator . '%si', $minified, $htmlSnippets);
 
@@ -648,11 +674,12 @@ class SearchPhp_Frontend_Crawler {
             $this->addHtmlToIndex($html, $link, $this->getLanguageFromResponse($response), $this->getEncodingFromResponse($response), $host);
             logger::info(get_class($this) . ": Added to indexer stack [ $link ]");
         } else {
+            $this->addNoIndexPage($link);
             logger::debug(get_class($this) . ": not indexing [ $link ] because it has robots noindex");
         }
         if (count($links) > 0) {
             foreach ($links as $foundLink) {
-                $this->processFoundLink($foundLink, $protocol, $host, $link,$depth,$cookieJar);
+                $this->processFoundLink($foundLink, $protocol, $host, $link, $depth, $cookieJar);
             }
         } else {
             logger::debug(get_class($this) . ": No links found on page at [ $link ] ");
@@ -672,25 +699,27 @@ class SearchPhp_Frontend_Crawler {
      * @param  Zend_Http_CookieJar $cookieJar
      * @return void
      */
-    protected function processFoundLink($foundLink, $protocol, $host, $link,$depth,$cookieJar){
+    protected function processFoundLink($foundLink, $protocol, $host, $link, $depth, $cookieJar)
+    {
         $foundLink = $this->cleanAndFormatLink($foundLink, $protocol, $host, $link);
-        if($foundLink){
+        if ($foundLink) {
             $valid = $this->validateLink($foundLink);
-                if ($valid and $foundLink != $link and strlen($foundLink) > 0) {
-                    $rowDone = $this->db->fetchRow("SELECT count(*) as count from plugin_searchphp_contents_temp WHERE id ='" . md5($foundLink) . "'");
+            if ($valid and $foundLink != $link and strlen($foundLink) > 0) {
+                $rowDone = $this->db->fetchRow("SELECT count(*) as count from plugin_searchphp_contents_temp WHERE id ='" . md5($foundLink) . "'");
+                $rowNoIndex = $this->db->fetchRow("SELECT count(*) as count from plugin_searchphp_frontend_crawler_noindex WHERE id ='" . md5($foundLink) . "'");
 
-                    if ($rowDone['count'] == 0) {
-                        try {
+                if ($rowDone['count'] == 0 and $rowNoIndex['count'] == 0) {
+                    try {
 
-                            if ($this->db->insert("plugin_searchphp_frontend_crawler_todo", array("id" => md5($foundLink), "uri" => $foundLink, "depth" => ($depth + 1), "cookiejar" => serialize($cookieJar)))) {
-                                logger::log(get_class($this) . ": Added link [ $foundLink ] to fetch list", Zend_Log::DEBUG);
-                            }
-
-                        } catch (Exception $e) {
-
+                        if ($this->db->insert("plugin_searchphp_frontend_crawler_todo", array("id" => md5($foundLink), "uri" => $foundLink, "depth" => ($depth + 1), "cookiejar" => serialize($cookieJar)))) {
+                            logger::log(get_class($this) . ": Added link [ $foundLink ] to fetch list", Zend_Log::DEBUG);
                         }
+
+                    } catch (Exception $e) {
+
                     }
                 }
+            }
         }
 
     }
@@ -700,7 +729,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  string $foundLink
      * @return bool
      */
-    protected function validateLink($foundLink) {
+    protected function validateLink($foundLink)
+    {
 
         $valid = false;
         foreach ($this->validLinkRegexes as $regex) {
@@ -730,7 +760,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  Zend_Http_Response $response
      * @return void
      */
-    protected function parsePdf($link, $response) {
+    protected function parsePdf($link, $response)
+    {
         $this->addPdfToIndex($link, $this->getLanguageFromResponse($response));
         logger::log(get_class($this) . ": Added pdf to index [ $link ]", Zend_Log::INFO);
     }
@@ -741,7 +772,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  Zend_Http_Response $response
      * @return string
      */
-    protected function getEncodingFromResponse($response) {
+    protected function getEncodingFromResponse($response)
+    {
 
 
         //try content-type header
@@ -791,17 +823,19 @@ class SearchPhp_Frontend_Crawler {
      * @param  string $html
      * @return string[]
      */
-    protected function getRobotsMetaInfo($html) {
+    protected function getRobotsMetaInfo($html)
+    {
 
         //use pimcore_searchphp direction first, robots as fallback
-        preg_match_all('@<meta\sname="pimcore_searchphp"\scontent="(?P<tags>\S+)"\s\/>@si', $html, $tags);
-        if ($tags == null or count($tags) == 0) {
-            preg_match_all('@<meta\sname="robots"\scontent="(?P<tags>\S+)"\s\/>@si', $html, $tags);
-        }
+        preg_match_all('/<[\s]*meta[\s]*name="pimcore_searchphp"?[\s]*content="?([^>"]*)"?[\s]*[\/]?[\s]*>/si', $html, $tags1);
+        preg_match_all('/<[\s]*meta[\s]*name="robots"?[\s]*content="?([^>"]*)"?[\s]*[\/]?[\s]*>/si', $html, $tags2);
+
+        $tags = implode(",", array_merge($tags1[1], $tags2[1]));
 
         $tokens = array();
-        if ($tags['tags'][0]) {
-            $tokens = explode(",", $tags['tags'][0]);
+        if ($tags) {
+            $tokens = explode(",", $tags);
+
             if (is_array($tokens)) {
                 $cleanedTokens = array();
                 foreach ($tokens as $token) {
@@ -814,7 +848,7 @@ class SearchPhp_Frontend_Crawler {
                 $tokens = array(trim(strtolower($tokens)));
             }
         }
-        logger::log($tokens);
+
         return $tokens;
     }
 
@@ -824,7 +858,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  Zend_Http_Response $response
      * @return string
      */
-    protected function getLanguageFromResponse($response) {
+    protected function getLanguageFromResponse($response)
+    {
 
         $l = $response->getHeader("Content-Language");
         if (empty($l)) {
@@ -850,6 +885,21 @@ class SearchPhp_Frontend_Crawler {
     }
 
 
+    protected function addNoIndexPage($url)
+    {
+
+        try {
+            $this->db->insert("plugin_searchphp_frontend_crawler_noindex", array("id" => md5($url), "uri" => $url));
+            logger::log("Plugin_SearchPhp: Adding [ $url ] to noindex pages", Zend_Log::DEBUG);
+
+        } catch (Exception $e) {
+
+        }
+
+
+    }
+
+
     /**
      * adds a HTML page to lucene index and mysql table for search result sumaries
      * @param  string $html
@@ -857,7 +907,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  string $language
      * @return void
      */
-    protected function addHtmlToIndex($html, $url, $language, $encoding, $host) {
+    protected function addHtmlToIndex($html, $url, $language, $encoding, $host)
+    {
 
         //$this->checkAndPrepareIndex();
 
@@ -868,7 +919,7 @@ class SearchPhp_Frontend_Crawler {
 
             //add h1 to index
             $headlines = array();
-            preg_match_all('@(<h1[^>]*?>\s*(.*?)\s*' . '</h1>)@si', $html, $headlines);
+            preg_match_all('@(<h1[^>]*?>[ \t\n\r\f]*(.*?)[ \t\n\r\f]*' . '</h1>)@si', $html, $headlines);
             if (is_array($headlines[2])) {
                 $h1 = "";
                 foreach ($headlines[2] as $headline) {
@@ -901,7 +952,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  string $language
      * @return void
      */
-    protected function addPdfToIndex($url, $language) {
+    protected function addPdfToIndex($url, $language)
+    {
         //$this->checkAndPrepareIndex();
 
         //TODO: PDF2Text does not seem to work
@@ -937,7 +989,8 @@ class SearchPhp_Frontend_Crawler {
     }
 
 
-    protected function checkAndPrepareIndex() {
+    protected function checkAndPrepareIndex()
+    {
         if (!$this->index) {
 
             $indexDir = SearchPhp_Plugin::getFrontendSearchIndex();
@@ -965,7 +1018,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  $html
      * @return mixed|string
      */
-    protected function getPlainTextFromHtml($html) {
+    protected function getPlainTextFromHtml($html)
+    {
 
         $doc = Zend_Search_Lucene_Document_Html::loadHTML($html, false);
         $html = $doc->getHTML();
@@ -979,7 +1033,7 @@ class SearchPhp_Frontend_Crawler {
         //remove html tags
         $text = strip_tags($text);
         //remove additional whitespaces
-        $text = preg_replace('@[\s]+@', " ", $text);
+        $text = preg_replace('@[ \t\n\r\f]+@', " ", $text);
 
         return $text;
 
@@ -989,7 +1043,8 @@ class SearchPhp_Frontend_Crawler {
      * @param  $link
      * @return string
      */
-    protected function removeOutputFilterParameters($link) {
+    protected function removeOutputFilterParameters($link)
+    {
         $link = str_replace("?pimcore_outputfilters_disabled=1&", "?", $link);
         $link = str_replace("?pimcore_outputfilters_disabled=1", "", $link);
         $link = str_replace("&pimcore_outputfilters_disabled=1", "", $link);
@@ -1000,10 +1055,11 @@ class SearchPhp_Frontend_Crawler {
      * @param  string $link
      * @return string
      */
-    protected function addEvictOutputFilterParameter($link) {
-        if (strpos($link, "pimcore_outputfilters_disabled=1")===FALSE) {
+    protected function addEvictOutputFilterParameter($link)
+    {
+        if (strpos($link, "pimcore_outputfilters_disabled=1") === FALSE) {
             $paramConcat = "?";
-            if (strpos($link, "?")!==FALSE) {
+            if (strpos($link, "?") !== FALSE) {
                 $paramConcat = "&";
             }
 
