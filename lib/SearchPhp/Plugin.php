@@ -183,7 +183,9 @@ class SearchPhp_Plugin extends Pimcore_API_Plugin_Abstract implements Pimcore_AP
         $message = "";
 
         //create folder for search in website
-        mkdir(PIMCORE_WEBSITE_PATH . "/var/search", 0755, true);
+
+        if (!is_dir(PIMCORE_WEBSITE_PATH . "/var/search"))
+            mkdir(PIMCORE_WEBSITE_PATH . "/var/search", 0755, true);
 
         //set up search config
         $searchConf = '<?xml version="1.0"?>
