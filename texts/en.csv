@@ -1,3 +1,6 @@
+"created_frontend_index_dir","Created frontend search index"
+"could_not_create_frontend_index_dir","Could not create frontend search index"
+"frontend_index_dir_not_configured","Frontend search index directory not configured"
 "failed_to_setup_search_config","Failed to setup search config"
 "installed_already","Search plugin is installed already."
 "could_not_create_dir","Could not install Search plugin, could not create directory "
