@@ -1,0 +1,25 @@
+{
+  "name": "pimcore-extensions/search-php",
+  "type": "pimcore-plugin",
+  "license": "Simple BSD",
+  "description": "Pimcore Website Search (powered by Zend_Search_Lucene)",
+  "keywords": ["pimcore", "search", "lucene"],
+  "homepage": "https://github.com/pimcore-extensions/search-php",
+  "authors": [
+    {
+      "name": "Bernhard Rusch",
+      "homepage": "http://www.pimcore.org/",
+      "role": "Developer"
+    }, {
+      "name": "Thomas Keil",
+      "homepage": "http://www.weblizards.de",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "pimcore/installer-plugin": ">=1"
+  },
+  "autoload": {
+    "psr-0": {"SearchPhp": "models/"}
+  }
+}
