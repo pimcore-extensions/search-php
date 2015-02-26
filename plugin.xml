@@ -5,10 +5,7 @@
     <pluginNiceName>Website Search Module</pluginNiceName>
     <pluginIcon>/plugins/SearchPhp/static/img/search-logo.png</pluginIcon>
     <pluginDescription>Search module for website with a php website crawler</pluginDescription>
-    <pluginServer>plugins.pimcore.org</pluginServer>
-    <pluginVersion>1.2</pluginVersion>
-    <pluginRevision>122</pluginRevision>
-    <pluginBuildTimestamp>1301492302</pluginBuildTimestamp>
+    <pluginVersion>1.2.20</pluginVersion>
     <pluginIframeSrc>/plugin/SearchPhp/admin/settings</pluginIframeSrc>
     <pluginClassName>SearchPhp_Plugin</pluginClassName>
     <pluginIncludePaths>
