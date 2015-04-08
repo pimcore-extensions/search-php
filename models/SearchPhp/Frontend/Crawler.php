@@ -297,6 +297,8 @@ class SearchPhp_Frontend_Crawler
 
         } while ($rows !== FALSE and count($rows) > 0);
 
+	// optimize lucene index for better performance
+	$this->index->optimize();
 
         //clean up
 
